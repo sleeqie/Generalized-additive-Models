@@ -1,0 +1,427 @@
+---
+title: "The evolution of agricultural production and covariate determinants of 131 Municipalities in Quebec."
+author: "Yusuf Adedamola"
+date: '2022-06-20'
+output: html_document
+theme: 
+  bootswatch: lux
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+ABSTRACT
+
+This paper is an analysis to investigate if the distance from Montreal and human population density are co-variables that can predict agricultural production.The relationship between the various agricultural produce densities such as Cattle, Pork, Poultry and Crops were analyzed in terms of their relationship with Year, and the Co-variates.
+
+The analysis was carried out in four major steps, starting with Cattle, Poultry, Crops and then Pork done last. The relationships were thoroughly explored with the GAM models using the mgvc and gratia libraries and the plot was done with the ggplot2 library.
+
+It is determined by the analysis that both the distance from Montreal and human population, including the time played major roles in the evolution of agricultural produce in Quebec.
+
+
+
+INTRODUCTION
+
+Almost 40% of the farms in Canada are solely for crop farming, then beef farming at 26.6%. These stats also vary among the regions.The focus of Quebec and Ontario is the production of red meats and dairy (AAFC, 2005).
+
+By the end of 1900s and the beginning of the 1950s, Quebec spend quite a large sum trying to settle its outside regions. During the 1929-30 economic depression, the government created a policy that promoted settlement in the Abitibi region of Quebec from those residing in the urban areas. The policy was not quite as successful as anticipated due to a simultaneous growth of Industrial centers in the 1940s, therefore the lands left left alone which resulted in a fast decline in the farming populations. (Dagenais, 1978).
+
+This analysis aims to check out the evolution of agricultural production and two independent variables namely human population density and the distance to montreal over time (years).
+
+
+Table 1: Farming Population estimation in Quebec, 1931-71.
+
+|Year|Farming population|Farming population as % of total population|
+|:-------:|:------:|:----:|
+| 1931 | 777,000 | 26.8 |
+| 1941 | 838,900 | 25.2 |
+| 1951 | 792,800 | 19.5 |
+| 1961 | 585,500 | 11.1 | 
+| 1971 | 334,600 | 5.6  |
+Source: Econ. Stud. Servo
+
+Between 1931 and 1971 the agricultural evolution in Quebec declined, from a self-sufficient agricultural economy to a highly dependent region on the western regions in Canada.
+
+Table 2. Agricultural Production evolution in Canada and in Quebec, 1935/39-1976.
+
+|Period|Canada (%)|Quebec (%)|
+|:-------: |:------:|:------:|
+| 1935/39 | 74.6  | 76.6  |
+| 1945/49 | 85.4  | 74.0  |
+| 1955/59 | 107.4 | 91.5  |
+| 1965/69 | 144.4 | 112.1 | 
+| 1971    | 159.7 | 116.9 |
+| 1976    | 178.0 | 123.4 |
+Source: Econ. Stud. Servo
+
+Due to the Quebec's focus on mostly dairy production, there was an attempt to diversify into other agricultural practise to meet demand, especially in the meat and feed sector.
+
+Table 3. Level of domestic farm production in relation to consumption for Quebec's Main Agro-Food Products, 1970-76.
+
+|Produce|1970-74 (average%)|1975 (%)|1976 (%)|
+|:-------:|:------:|:-------:|:-------:|
+| Milk and dairy products| 122.6  | 128.0  | 118.3|
+| Livestock and meat (no poultry) | 44.7 | 47.4 | 47.9|
+| Beef | (24.1) | (19.3)  |(21.8)|
+| Pork | (71.8) | (106.1)| (104.7)|
+| Poultry   | 106.3 | 98.8 | 103.8|
+| Eggs   | 63.3 | 74.7| 82.5|
+| Fruits   | 21.3 | 16.4 | 11.1|
+| Vegetables   | 45.5 |  44.1| 47.7|
+| Fodder grains  | 28.0| 28.6 | 35.4|
+
+
+Source: "Coup d'oeil sur I'agro-alimentaire au Quebec," 1977;
+MAQ. Quebec, 1977.
+
+
+
+MATERIALS AND METHODS 
+
+Data collection:
+
+Dataset and instructions for the agricultural evolution and co-variate analysis were obtained from Dr. Noël Juvigny-Khenafou. R Studio (R 4.1.3 binary for macOS 10.13) software was used to extract and analyze the dataset. GAM is used for non-linear interactions. 
+
+RESULTS 
+
+1. CATTLE AND THE COVARIATE RELATIONSHIPS.
+
+```{r, echo=FALSE, error=FALSE, warning=FALSE, results='hide'}
+gamdata = read.csv("data_short.csv")
+gamdata
+library(mgcv)
+library(ggplot2)
+library(gratia)
+gamdata$Pork.....km2. <- as.numeric(as.character(gamdata$Pork.....km2.))
+head(gamdata)
+summary(gamdata)
+
+lm(log(Cattle....km2. +1) ~ Distance.from.Montreal..km., data = gamdata)
+plot(log(Cattle....km2. +1) ~ Distance.from.Montreal..km., data = gamdata, xlab="Distance from montreal",
+     ylab="Cattle/Km2") 
+
+```
+
+
+Figure 1: Checking the linear relationship between Cattle and the Distance from Montreal.
+
+
+
+
+```{r, echo=FALSE, error=FALSE, warning=FALSE, results='hide' }
+moda <- gam(log(Cattle....km2. +1)~ s(Distance.from.Montreal..km., k=20) + s(Human.population....km2., k=25) + s(Year, k = 4), data = gamdata, method = "REML")
+#draw(moda)
+plot(moda, pages = 1, shade = TRUE, shade.col = "turquoise", rug = TRUE, residuals = TRUE,
+     pch = 1, cex = 0.2 )
+```
+
+
+Figure 2: Checking the relationship between Cattle, the two covariates and time.
+
+
+```{r, echo=FALSE, error=FALSE, warning=FALSE, results='hide'}
+ggplot(gamdata, aes(Distance.from.Montreal..km., Cattle....km2., 
+                        )) +
+  geom_point(aes(size= Human.population....km2., color = Year)) +
+  labs(y="Cattle density", x="Distance from montreal")
+```
+
+Figure 3: Checking the evolutionary relationship between Cattle and the two covariates over time.
+
+
+```{r, echo=FALSE, error=FALSE, warning=FALSE, results='hide'}
+appraise(moda)
+```
+
+Figure 4: Plots showing theoretical quantiles, histogram and QQplot of Cattle and the two covariates over time (Year).
+
+
+
+Table 4: Showing the statistical summary and reports on model convergence of the relationship between Cattle density and the two covariates over time.
+
+```{r}
+summary(moda)
+gam.check(moda)
+```
+
+
+2. POULTRY AND THE COVARIATE RELATIONSHIPS.
+
+```{r, echo=FALSE, error=FALSE, warning=FALSE, results='hide'}
+modb <- gam(log(Poultry....km2.+1)~ s(Distance.from.Montreal..km.) + s(Human.population....km2.) + s(Year, k = 4), data = gamdata, method = "REML")
+#draw(modb)
+plot(modb, pages = 1, shade = TRUE, shade.col = "pink", rug = TRUE, residuals = TRUE,
+     pch = 1, cex = 0.2  )
+summary(modb)
+```
+
+Figure 5: Checking the relationship between Poultry, the two covariates and time.
+
+
+
+
+```{r, echo=FALSE, error=FALSE, warning=FALSE, results='hide'}
+ggplot(gamdata, aes(Distance.from.Montreal..km., Poultry....km2., 
+                        )) +
+  geom_point(aes(size= Human.population....km2., color = Year)) +
+  labs(y="Poultry density", x="Distance from montreal")
+```
+
+Figure 6: Checking the evolutionary relationship between Poultry and the two covariates over time.
+
+
+
+```{r, echo=FALSE, error=FALSE, warning=FALSE, results='hide'}
+appraise(modb)
+```
+
+Figure 7: Plots showing theoretical quantiles, histogram and QQplot of Poultry and the two covariates over time (Year).
+
+
+
+Table 5: Showing the statistical summary and reports on model convergence of the relationship between Poultry density and the two covariates over time.
+
+```{r}
+summary(modb)
+gam.check(modb)
+```
+
+3. CROPS AND THE COVARIATE RELATIONSHIPS OVER TIME.
+
+```{r, echo=FALSE, error=FALSE, warning=FALSE, results='hide'}
+modc <- gam(log(Crops.... +1) ~ s(Distance.from.Montreal..km.) + s(Human.population....km2.) + s(Year, k = 4), data = gamdata, method = "REML")
+#summary(modc)
+#draw(modc)
+plot(modc, pages = 1, shade = TRUE, shade.col = "blue", rug = TRUE, residuals = TRUE,
+     pch = 1, cex = 0.2  )
+```
+
+Figure 8: Checking the relationship between Crop density, the two covariates and time.
+
+```{r, echo=FALSE, error=FALSE, warning=FALSE, results='hide'}
+ggplot(gamdata, aes(Distance.from.Montreal..km., Crops...., 
+                        )) +
+  geom_point(aes(size= Human.population....km2., color = Year)) +
+  labs(y="Crop density", x="Distance from montreal")
+
+```
+
+Figure 9: Checking the evolutionary relationship between Crop density and the two covariates over time.
+
+
+```{r, echo=FALSE, error=FALSE, warning=FALSE, results='hide'}
+appraise(modc)
+```
+
+Figure 10: Plots showing theoretical quantiles, histogram and QQplot of Crop density and the two covariates over time (Year).
+
+
+Table 6: Showing the statistical summary and reports on model convergence of the relationship between Crop density and the two covariates over time.
+
+```{r}
+summary(modc)
+gam.check(modc)
+```
+
+4. PORK AND THE COVARIATE RELATIONSHIPS.
+
+```{r, echo=FALSE, error=FALSE, warning=FALSE, results='hide'}
+modd <- gam(log(Pork.....km2. +1) ~ s(Distance.from.Montreal..km.) + s(Human.population....km2.) + s(Year, k = 4), data = gamdata, method = "REML")
+#summary(modd)
+#draw(modd)
+plot(modd, pages = 1, shade = TRUE, shade.col = "yellow", rug = TRUE, residuals = TRUE,
+     pch = 1, cex = 0.2  )
+
+```
+
+Figure 11: Checking the relationship between Pork and the two covariates.
+
+```{r, echo=FALSE, error=FALSE, warning=FALSE, results='hide'}
+ggplot(gamdata, aes(Distance.from.Montreal..km., Pork.....km2., 
+                        )) +
+  geom_point(aes(size= Human.population....km2., color = Year)) +
+  labs(y="Pork density", x="Distance from montreal")
+```
+
+Figure 12: Checking the evolutionary relationship between Pork density and the two covariates over time.
+
+```{r, echo=FALSE, error=FALSE, warning=FALSE, results='hide'}
+appraise(modd)
+```
+
+Figure 13: Plots showing theoretical quantiles, histogram and QQplot of Crop density and the two covariates over time (Year).
+
+
+
+Table 7: Showing the statistical summary and reports on model convergence of the relationship between Pork density and the two covariates over time.
+
+
+```{r}
+summary(modd)
+gam.check(modd)
+```
+
+
+5. Box plots showing the variation of the agricultural production density over time.
+
+```{r, echo=FALSE, error=FALSE, warning=FALSE, results='hide'}
+boxplot(log(Cattle....km2. +1) ~ Year, data=gamdata,
+            col=(c("grey","yellow")),
+            main="Boxplot of cattle density over time", xlab="Year",
+            ylab="Cattle(km2)")
+```
+
+Figure 14: Box plot of Cattle and Year.
+
+```{r, echo=FALSE, error=FALSE, warning=FALSE, results='hide'}
+boxplot(log(Poultry....km2. +1) ~ Year, data=gamdata,
+        col=(c("red","blue")),
+        main="Boxplot of poultry density over time", xlab="Year",
+        ylab="Poultry(km2)")
+```
+
+Figure 15: Box plot of Poultry and Year.
+
+```{r, echo=FALSE, error=FALSE, warning=FALSE, results='hide'}
+boxplot(log(Crops.... +1) ~ Year, data=gamdata,
+        col=(c("green","blue")),
+        main="Boxplot of Crop density over time", xlab="Year",
+        ylab="Crop(km2)")
+```
+
+Figure 16: Box plot of Crops and Year.
+
+```{r, echo=FALSE, error=FALSE, warning=FALSE, results='hide'}
+boxplot(log(Pork.....km2. +1) ~ Year, data=gamdata,
+        col=(c("pink","blue")),
+        main="Boxplot of Pork density over time", xlab="Year",
+        ylab="Crop(km2)")
+```
+
+Figure 17: Box plot of Pork and Year.
+
+6. Agricultural density variation and the first 100 municipalities.
+
+```{r, echo=FALSE, error=FALSE, warning=FALSE, results='hide'}
+ggplot(gamdata[1:100, ], aes(x=MUNICIPALITY_NAME, y=Cattle....km2. )) + 
+  geom_point(size=3) + 
+  geom_segment(aes(x=MUNICIPALITY_NAME, 
+                   xend=MUNICIPALITY_NAME, 
+                   y=0, 
+                   yend=log(Cattle....km2.))) + 
+  labs(title="Lollipop Chart", 
+       subtitle="Cattle density for the first 100 municipalities", 
+    ) + 
+  theme(axis.text.x = element_text(angle=65, vjust=0.6))
+```
+
+Figure 18: Lollipop chart showing Cattle density variation and the first 100 municipalities.
+
+```{r, echo=FALSE, error=FALSE, warning=FALSE, results='hide'}
+ggplot(gamdata[1:100, ], aes(x=MUNICIPALITY_NAME, y=Poultry....km2.)) + 
+  geom_point(size=3) + 
+  geom_segment(aes(x=MUNICIPALITY_NAME, 
+                   xend=MUNICIPALITY_NAME, 
+                   y=0, 
+                   yend=(Poultry....km2.))) + 
+  labs(title="Lollipop Chart", 
+       subtitle="Poultry density for the first 100 municipalities", 
+  ) + 
+  theme(axis.text.x = element_text(angle=65, vjust=0.6))
+
+```
+
+Figure 19: Lollipop chart showing Poultry density variation and the first 100 municipalities.
+
+```{r, echo=FALSE, error=FALSE, warning=FALSE, results='hide'}
+ggplot(gamdata[1:100, ], aes(x=MUNICIPALITY_NAME, y=Crops.... )) + 
+  geom_point(size=3) + 
+  geom_segment(aes(x=MUNICIPALITY_NAME, 
+                   xend=MUNICIPALITY_NAME, 
+                   y=0, 
+                   yend=(Crops.... ))) + 
+  labs(title="Lollipop Chart", 
+       subtitle="Crop density for the first 100 municipalities", 
+  ) + 
+  theme(axis.text.x = element_text(angle=65, vjust=0.6))
+```
+
+Figure 20: Lollipop chart showing Crop density variation and the first 100 municipalities.
+
+```{r, echo=FALSE, error=FALSE, warning=FALSE, results='hide'}
+ggplot(gamdata[1:100, ], aes(x=MUNICIPALITY_NAME, y=Pork.....km2.)) + 
+  geom_point(size=3) + 
+  geom_segment(aes(x=MUNICIPALITY_NAME, 
+                   xend=MUNICIPALITY_NAME, 
+                   y=0, 
+                   yend=(Pork.....km2. ))) + 
+  labs(title="Lollipop Chart", 
+       subtitle="Pork density for the first 100 municipalities", 
+  ) + 
+  theme(axis.text.x = element_text(angle=65, vjust=0.6))
+```
+
+Figure 21: Lollipop chart showing Pork density variation and the first 100 municipalities.
+
+
+DISCUSSION
+
+The analysis of this data was done using the Generalized additive model for the non-linear data. The GAM is majorly used to explore the data, while the ggplot2 was used for most of the data plots. All the agricultural factors were separately considered, including the two covariates (distance and human population density), which are highly significant in the assessment of the agricultural evolution. The amount of literature available for review was highly limited for Quebec, with most of the focus on Canada in general.
+
+1. CATTLE: 
+
+The partial effects plots in Fig 1 shows the component effect of each of the smooth or linear terms in the model, which add up to the overall prediction and it is observed that the relationship between cattle and the distance from Montreal is not linear, so the use of a generalized additive model is valid for the data analysis. Fig 2 shows three plots which are results from using a GAM model. It can be seen that for the year, a straight line can be drawn for significance of smooth terms, therefore we ask, is it really significant? 
+
+It is important to note that high edf values do not mean significance, which is proven by Table 4, where we see significant p-values for Year, despite having a low EDF. This means Year may be linear, (with an edf value of 1.002), but it still contributes to the effect. Distance and Population haVE respective EDFs of 5.251 and 5.642 with significant p-values. From Fig 4, it is observed that there is an almost straight line on the QQplot, and the histogram is bell shaped, although skewed to left, which shows the bulk of the observations are medium or large.
+
+
+2. POULTRY: 
+
+The partial effects plots in Fig 5, shows that the distance had a slightly positive spike between 60-80km/2. For human population its a straight line through zero and for year, a downtrend can be observed from 1980-2006. In Table 5, Distance and Year were significant factors, but population was not significant to the production of poultry. In Fig 7, it can be observed that the QQplot line is not straight, which indicates that it might not be well fitted. A skew towards the right can also be observed from the histogram plot. The smooth term k was increased severally to solve for this problem, but this plot was the best fitted I could get.
+
+
+3. CROPS: 
+
+From Fig 8, a downward trend can be observed in distance especially between 80-100km/2, and population from 500-2500km/2, with year having average values on zero. In Table 6, it can be seen that all the variables are significant in predicting for crop density. Fig 10 shows the QQplot having an almost straight line which indicates a fairly good fit. The histogram is also bell shaped, with a bit of skew to the left.
+
+
+4. PORK: 
+
+It can be seen from Fig 11 that there is a positive spike from 40-100km/2 for distance, and a negative trend from 500-2000km/2 for population and an average one for Year as observed with others. From Table 7, Distance is very significant, with Year coming next, and then Population.
+
+
+5. TIME VS AGRICULTURAL PRODUCE DENSITY: 
+
+In Fig 14, the Cattle density across the years have maintained an average between 20-40km/2 from 1971-2006. In Fig 15, the average density of poultry dropped drastically between 1981-2006 with quite a few outliers on the high side. It was better between 1971-1976. This could be as a result of renewed economic activity in the industrial centers, thereby resulting in a rapid decline in the farming population in the designated areas (Dagenais, 1978). In Fig 16, there was an averagely high density of crop density throughout the years. In Fig 17, there was an increasing density of pork production, especially from 1981. This is supported by the increase in hog farming where the number of pigs per farm rose by more than twentyfold from approximately 70 in 1971 to 1450 in 2008 (CANSIM 2009).
+
+6. AGRICULTURAL DENSITY ACROSS THE FIRST 100 MUNICIPALIIES:
+
+From Fig 18, the municipality with the highest density of cattle is Godmanchester. Saint-aime, Bethanie and a few others had the lowest densities. While the others have cattle densities between 25-75km/2. From Fig 19, for poultry density, Saint-aime, Ange Gardien have the highest densities, while most of the others were between 0 and 50km/2. From Fig 20, for crop density, there was an averagely high density from 20-60km/2. From Fig 21,  for pork, the average density ranged from 0-50km/2.
+
+
+CONCLUSION
+
+In conclusion, it can be determined that:
+
+1. The distance to Montreal is a major variable in the prediction of agricultural production.
+
+2. Time also played a major role, as the decline in density could be observed for poultry.
+
+3. The population of humans is also a significant co-variate in the density of agricultural produce.
+
+4. Generally, it was observed that across all the municipalities crop density was very high, while poultry density is the lowest.
+
+5. The clear evolution can be seen over the years, with declining production and densities in poultry, average production in cattle and crops and increased production and density for Pork.
+
+I can also add that it would have been interesting to also analyze other factors such as the hectare of land available for farming, because I feel this could have also been a great contributor to assess the evolution of the density of agricultural produce.
+
+
+
+REFERENCES
+
+1. AAFC (Agriculture and Agri-Food Canada). (2005). An overview of the Canadian agriculture and agri-food system. Ottawa, ON.
+
+2. Dagenais, F. (1978). The development of a food and agriculture policy in Quebec. American Journal of Agricultural Economics, 60(5), 1045-1050.
+
+3. Statistics Canada. CANSIM database (accessed June, 2009).
+
