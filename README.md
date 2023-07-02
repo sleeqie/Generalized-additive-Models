@@ -1,5 +1,2 @@
-# 2022projects
-# 2022projects
-# 2022projects
-# 2022projects
-# 2022projects
+# Generalized additive models
+All GAM modelling prokects and analysis.
